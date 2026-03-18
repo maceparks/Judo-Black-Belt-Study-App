@@ -1,4 +1,4 @@
-﻿const cacheName = 'judo-v6';
+﻿const cacheName = 'judo-v7';
 const assets = [
   './index.html',
   './manifest.json',
