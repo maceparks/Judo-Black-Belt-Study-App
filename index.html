@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -85,6 +85,17 @@
             text-align: center;
         }
 
+        /* NEW COUNTER STYLES */
+        .q-counter {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
         .question-text {
             font-size: 1.25rem;
             font-weight: 700;
@@ -93,6 +104,7 @@
             min-height: 80px;
             display: flex; align-items: center; justify-content: center;
             text-align: center;
+            line-height: 1.3;
         }
         .options-grid { display: grid; gap: 12px; }
         .option-btn {
@@ -104,6 +116,7 @@
             text-align: left;
             font-size: 1rem;
             font-weight: 500;
+            transition: 0.2s;
         }
         .option-btn.correct { background-color: #dcfce7 !important; border-color: #22c55e !important; color: #166534; }
         .option-btn.wrong { background-color: #fee2e2 !important; border-color: #ef4444 !important; color: #991b1b; }
@@ -131,7 +144,7 @@
 <div class="container">
     <div class="header">
         <h2>Shodan Master</h2>
-        <small>Technical Suite v5.0 (Final Build)</small>
+        <small>Technical Suite v5.5 (Rapid Test Edition)</small>
     </div>
 
     <div class="tabs">
@@ -144,18 +157,19 @@
     <div id="quiz-content" class="content">
         <div id="quiz-intro" class="intro-card">
             <h3>Knowledge Mastery</h3>
-            <p>Complete randomized exam. All terminology and the full 40-throw Gokyo included.</p>
-            <button class="action-btn" onclick="startTest()">Begin Examination</button>
+            <p>A focused 20-question randomized exam covering the Gokyo, Newaza groundwork, and terminology. Score 80% to pass.</p>
+            <button class="action-btn" onclick="startTest()">Begin 20-Question Exam</button>
         </div>
         <div id="quiz-playing" class="hidden">
+            <div id="q-counter" class="q-counter">Question 1 of 20</div>
             <div id="q-text" class="question-text"></div>
             <div id="options-box" class="options-grid"></div>
         </div>
         <div id="quiz-results" class="hidden" style="text-align:center;">
             <h2>Final Report</h2>
             <div id="grade-display" class="grade-circle"></div>
-            <div id="result-score" style="font-weight:bold;"></div>
-            <p id="result-msg"></p>
+            <div id="result-score" style="font-weight:bold; font-size: 1.2rem;"></div>
+            <p id="result-msg" style="padding: 10px 20px; color: var(--text-light);"></p>
             <button class="action-btn" onclick="location.reload()">Reset Exam</button>
         </div>
     </div>
@@ -165,8 +179,8 @@
     <div id="glossary-content" class="content hidden">
         <input type="text" id="glossary-search" class="search-bar" placeholder="Search terminology..." onkeyup="filterGlossary()">
         <div style="display:flex; gap:10px; margin-bottom:15px;">
-            <button onclick="shuffleGlossary()" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; background:#fff; cursor:pointer;">Shuffle</button>
-            <button onclick="hideAllGlossary()" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; background:#fff; cursor:pointer;">Hide All</button>
+            <button onclick="shuffleGlossary()" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; background:#fff; cursor:pointer; font-weight:600;">Shuffle</button>
+            <button onclick="hideAllGlossary()" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; background:#fff; cursor:pointer; font-weight:600;">Hide All</button>
         </div>
         <div id="glossary-list"></div>
     </div>
@@ -179,6 +193,7 @@
 
 <script>
     const fullBank = [
+        // GOKYO (Verified Kodokan)
         { q: "De-ashi-harai", a: "Forward Foot Sweep" },
         { q: "Hiza-guruma", a: "Knee Wheel" },
         { q: "Sasae-tsurikomi-ashi", a: "Propping Drawing Ankle Throw" },
@@ -219,28 +234,31 @@
         { q: "Ura-nage", a: "Rear Throw" },
         { q: "Sumi-otoshi", a: "Corner Drop" },
         { q: "Yoko-gake", a: "Side Hook" },
+        // NEWAZA & THEORY
         { q: "Hadaka-jime", a: "Naked Choke" },
-        { q: "Juji-gatame", a: "Cross Armlock" },
+        { q: "Ude-hishigi-juji-gatame", a: "Cross Armlock" },
         { q: "Sankaku-jime", a: "Triangle Choke" },
+        { q: "Ude-garami", a: "Entangled Armlock" },
         { q: "Kuzushi", a: "Off-balancing" },
         { q: "Tsukuri", a: "Entry / Fitting-in" },
         { q: "Kake", a: "Execution" },
         { q: "Jita Kyoei", a: "Mutual Welfare and Benefit" },
-        { q: "Seiryoku Zenyo", a: "Maximum Efficiency" }
+        { q: "Seiryoku Zenyo", a: "Maximum Efficiency" },
+        { q: "Maitta", a: "I surrender / Tap out" }
     ];
 
     const lists = {
         gokyo: {
-            "Set 1": ["De-ashi-harai", "Hiza-guruma", "Sasae-tsurikomi-ashi", "Uki-goshi", "O-soto-gari", "O-goshi", "O-uchi-gari", "Seoi-nage"],
-            "Set 2": ["Ko-soto-gari", "Ko-uchi-gari", "Koshi-guruma", "Tsurikomi-goshi", "Okuri-ashi-harai", "Tai-otoshi", "Harai-goshi", "Uchi-mata"],
-            "Set 3": ["Ko-soto-gake", "Tsuri-goshi", "Yoko-otoshi", "Ashi-guruma", "Hane-goshi", "Harai-tsurikomi-ashi", "Tomoe-nage", "Kata-guruma"],
-            "Set 4": ["Sumi-gaeshi", "Tani-otoshi", "Hane-makikomi", "Sukui-nage", "Utsuri-goshi", "O-guruma", "Soto-makikomi", "Uki-otoshi"],
-            "Set 5": ["O-soto-guruma", "Uki-waza", "Yoko-wakare", "Yoko-guruma", "Ushiro-goshi", "Ura-nage", "Sumi-otoshi", "Yoko-gake"]
+            "Dai Ikkyo (Set 1)": ["De-ashi-harai", "Hiza-guruma", "Sasae-tsurikomi-ashi", "Uki-goshi", "O-soto-gari", "O-goshi", "O-uchi-gari", "Seoi-nage"],
+            "Dai Nikyo (Set 2)": ["Ko-soto-gari", "Ko-uchi-gari", "Koshi-guruma", "Tsurikomi-goshi", "Okuri-ashi-harai", "Tai-otoshi", "Harai-goshi", "Uchi-mata"],
+            "Dai Sankyo (Set 3)": ["Ko-soto-gake", "Tsuri-goshi", "Yoko-otoshi", "Ashi-guruma", "Hane-goshi", "Harai-tsurikomi-ashi", "Tomoe-nage", "Kata-guruma"],
+            "Dai Yonkyo (Set 4)": ["Sumi-gaeshi", "Tani-otoshi", "Hane-makikomi", "Sukui-nage", "Utsuri-goshi", "O-guruma", "Soto-makikomi", "Uki-otoshi"],
+            "Dai Gokyo (Set 5)": ["O-soto-guruma", "Uki-waza", "Yoko-wakare", "Yoko-guruma", "Ushiro-goshi", "Ura-nage", "Sumi-otoshi", "Yoko-gake"]
         },
         newaza: {
-            "Pins": ["Kesa-gatame", "Kata-gatame", "Kami-shiho-gatame", "Yoko-shiho-gatame", "Tate-shiho-gatame"],
-            "Chokes": ["Nami-juji-jime", "Hadaka-jime", "Okuri-eri-jime", "Sankaku-jime"],
-            "Locks": ["Juji-gatame", "Ude-garami", "Waki-gatame"]
+            "Pins (Osaekomi)": ["Kesa-gatame", "Kata-gatame", "Kami-shiho-gatame", "Yoko-shiho-gatame", "Tate-shiho-gatame"],
+            "Chokes (Shime)": ["Nami-juji-jime", "Hadaka-jime", "Okuri-eri-jime", "Sankaku-jime", "Kata-ha-jime"],
+            "Locks (Kansetsu)": ["Ude-hishigi-juji-gatame", "Ude-garami", "Ude-hishigi-waki-gatame"]
         }
     };
 
@@ -295,7 +313,7 @@
     }
 
     function startTest() {
-        pool = [...fullBank].sort(() => 0.5 - Math.random()).slice(0, 40);
+        pool = [...fullBank].sort(() => 0.5 - Math.random()).slice(0, 20); // UPDATED TO 20
         idx = 0; score = 0;
         document.getElementById('quiz-intro').classList.add('hidden');
         document.getElementById('quiz-playing').classList.remove('hidden');
@@ -304,6 +322,7 @@
 
     function nextQ() {
         let d = pool[idx];
+        document.getElementById('q-counter').innerText = `Question ${idx + 1} of 20`; // ADDED COUNTER
         document.getElementById('q-text').innerText = "Translation of: " + d.q;
         let c = [d.a];
         while(c.length < 4) {
@@ -320,7 +339,7 @@
                     if(b.innerText === d.a) b.classList.add('correct');
                 });
                 if(opt === d.a) score++; else btn.classList.add('wrong');
-                setTimeout(() => { idx++; if(idx < 40) nextQ(); else showScore(); }, 1200);
+                setTimeout(() => { idx++; if(idx < 20) nextQ(); else showScore(); }, 1100);
             };
             box.appendChild(btn);
         });
@@ -329,15 +348,14 @@
     function showScore() {
         document.getElementById('quiz-playing').classList.add('hidden');
         document.getElementById('quiz-results').classList.remove('hidden');
-        let p = (score/40)*100;
+        let p = (score/20)*100;
         let g = p >= 90 ? "S" : p >= 80 ? "A" : p >= 70 ? "B" : "F";
         let gd = document.getElementById('grade-display'); gd.innerText = g;
         gd.style.color = p >= 80 ? "var(--crimson)" : "var(--dojo-navy)";
-        document.getElementById('result-score').innerText = `Final Score: ${score}/40 (${p}%)`;
-        document.getElementById('result-msg').innerText = p >= 80 ? "Technical Knowledge Confirmed." : "Study terminology further.";
+        document.getElementById('result-score').innerText = `Final Score: ${score}/20 (${p}%)`;
+        document.getElementById('result-msg').innerText = p >= 80 ? "Technical Knowledge Confirmed. Ready for the Mat." : "Return to the Glossary and review your terminology.";
     }
 
-    // PWA Service Worker Registration
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js');
